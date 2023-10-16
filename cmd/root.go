@@ -5,10 +5,9 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/linkisensei/civitdownloader/civit"
+	"github.com/linkisensei/civitdownloader/app"
 	"github.com/spf13/cobra"
 )
 
@@ -20,18 +19,20 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		model, _ := civit.GetModel(25306)
-		fmt.Printf("MODEL: %s\n", model.Name)
+		// model, _ := civit.GetModel(25306)
+		// fmt.Printf("MODEL: %s\n", model.Name)
 
-		fmt.Printf("LATEST VERSION: %s\n", model.GetVersion(0).Name)
-		downloadUrl, _ := model.Versions[0].GetDownloadUrl()
-		fmt.Printf("DOWNLOAD URL: %s\n", downloadUrl)
+		// fmt.Printf("LATEST VERSION: %s\n", model.GetVersion(0).Name)
+		// downloadUrl, _ := model.Versions[0].GetDownloadUrl()
+		// fmt.Printf("DOWNLOAD URL: %s\n", downloadUrl)
 
-		fmt.Printf("63765 VERSION: %s\n", model.GetVersion(63765).Name)
-		downloadUrl2, _ := model.GetVersion(63765).GetDownloadUrl()
-		fmt.Printf("DOWNLOAD URL: %s\n", downloadUrl2)
+		// fmt.Printf("63765 VERSION: %s\n", model.GetVersion(63765).Name)
+		// downloadUrl2, _ := model.GetVersion(63765).GetDownloadUrl()
+		// fmt.Printf("DOWNLOAD URL: %s\n", downloadUrl2)
 
 		// civit.createRequestInfoFromUrl("https://civitai.com/models/25306?modelVersionId=40541")
+
+		app.DownloadModel("https://civitai.com/models/25306?modelVersionId=40541")
 	},
 }
 

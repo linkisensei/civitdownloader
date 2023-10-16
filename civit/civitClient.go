@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -25,6 +28,19 @@ type CivitAIModelFile struct {
 
 type CivitAIImage struct {
 	Url string `json:"url"`
+}
+
+func (img *CivitAIImage) GetFilenameForModelVersion(version *CivitAIModelVersion) string {
+	modelFilename, err := version.GetFilename()
+	if err != nil {
+		return ""
+	}
+
+	fileExtension := filepath.Ext(img.Url)
+	modelName := strings.TrimSuffix(modelFilename, filepath.Ext(modelFilename))
+
+	newFilename := modelName + fileExtension
+	return newFilename
 }
 
 type CivitAIModelVersion struct {
@@ -49,21 +65,57 @@ type modelRequestInfo struct {
 	VersionId int64
 }
 
-func (v *CivitAIModelVersion) GetDownloadUrl() (string, error) {
-	var url string
+func (v *CivitAIModelVersion) GetModelFile() (*CivitAIModelFile, error) {
+	var modelFile *CivitAIModelFile
 
 	for _, file := range v.Files {
 		if file.Type == "Model" {
-			url = file.DownloadUrl
+			modelFile = &file
 			break
 		}
 	}
 
-	if url == "" {
-		return "", errors.New("missing download url for model")
+	if modelFile == nil {
+		return modelFile, errors.New("missing model filename")
 	}
 
-	return url, nil
+	return modelFile, nil
+}
+
+func (v *CivitAIModelVersion) GetFilename() (string, error) {
+	modelFile, err := v.GetModelFile()
+	if err != nil {
+		return "", err
+	}
+
+	if modelFile.Name == "" {
+		return "", errors.New("missing model filename")
+	}
+	return modelFile.Name, nil
+}
+
+func (v *CivitAIModelVersion) GetDownloadUrl() (string, error) {
+	modelFile, err := v.GetModelFile()
+	if err != nil {
+		return "", err
+	}
+
+	if modelFile.DownloadUrl == "" {
+		return "", errors.New("missing model download url")
+	}
+	return modelFile.DownloadUrl, nil
+}
+
+func (v *CivitAIModelVersion) GetRandomModelImage() *CivitAIImage {
+	imageCount := len(v.Images)
+	if imageCount == 0 {
+		return &CivitAIImage{}
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(imageCount)
+	randomItem := v.Images[randomIndex]
+	return &randomItem
 }
 
 /**
@@ -114,7 +166,7 @@ func GetModel(modelId int64) (CivitAIModel, error) {
 	return model, nil
 }
 
-func createRequestInfoFromUrl(modelUrl string) (modelRequestInfo, error) {
+func CreateRequestInfoFromUrl(modelUrl string) (modelRequestInfo, error) {
 
 	var request modelRequestInfo
 
