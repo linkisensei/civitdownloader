@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/fatih/color"
 	"github.com/linkisensei/civitdownloader/app/automatic1111"
 	"github.com/linkisensei/civitdownloader/civit"
 	"github.com/linkisensei/civitdownloader/util"
@@ -22,6 +23,9 @@ func DownloadModel(modelUrl string) error {
 		return err
 	}
 
+	greenColor := color.New(color.FgGreen).Add(color.Underline)
+	greenColor.Printf("Model: %s", civitModel.Name+"\n")
+
 	// Extracting Model Version and Model File
 	modelVersion := civitModel.GetVersion(requestInfo.VersionId)
 	modelFile, err := modelVersion.GetModelFile()
@@ -29,6 +33,8 @@ func DownloadModel(modelUrl string) error {
 		fmt.Println(err.Error())
 		return err
 	}
+
+	greenColor.Printf("Version: %s", modelVersion.Name+"\n\n")
 
 	downloadUrl := modelFile.DownloadUrl
 	filename := modelFile.Name
@@ -44,10 +50,8 @@ func DownloadModel(modelUrl string) error {
 
 	filePath := filepath.Join(basePath, filename)
 
-	fmt.Println(downloadUrl)
-	fmt.Println(filePath)
-
 	// Downloading the Model Version File
+	greenColor.Printf("1) Model File:\n")
 	util.DownloadFile(downloadUrl, filePath)
 
 	// Downloading a Model Version Image
@@ -55,11 +59,18 @@ func DownloadModel(modelUrl string) error {
 	if modelImage != nil {
 		imageFilename := modelImage.GetFilenameForModelVersion(modelVersion)
 		imagePath := filepath.Join(basePath, imageFilename)
+		greenColor.Printf("2) Image File:\n")
 		util.DownloadFile(modelImage.Url, imagePath)
 	}
 
 	// Generating Model Version Config JSON
-	_ = automatic1111.CreateConfigJson(basePath, &civitModel, modelVersion)
+	greenColor.Printf("3) Config JSON:\n")
+	err = automatic1111.CreateConfigJson(basePath, &civitModel, modelVersion)
+	if err != nil {
+		fmt.Printf("Skipped")
+	} else {
+		fmt.Printf("Generated")
+	}
 
 	return nil
 }

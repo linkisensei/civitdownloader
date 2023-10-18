@@ -1,9 +1,12 @@
 package automatic1111
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/linkisensei/civitdownloader/civit"
@@ -13,11 +16,16 @@ import (
 var instalationPath string = "F:\\stable-diffusion-webui"
 
 type LoraConfigJson struct {
-	SDVersion       string `json="sd version"`
-	Description     string `json="description"`
-	ActivationText  string `json="activation text"`
-	PreferredWeight string `json="preferred weight"`
-	Notes           string `json="notes"`
+	SDVersion       string  `json="sd version"`
+	Description     string  `json="description"`
+	ActivationText  string  `json="activation text"`
+	PreferredWeight float64 `json="preferred weight"`
+	Notes           string  `json="notes"`
+}
+
+type LycorisConfigJson struct {
+	Description string `json="description"`
+	Notes       string `json="notes"`
 }
 
 func GetModelPathFromCivitAiModel(model *civit.CivitAIModel) (string, error) {
@@ -56,8 +64,8 @@ func CreateConfigJson(basePath string, model *civit.CivitAIModel, version *civit
 	switch strings.ToUpper(model.Type) {
 	case "LORA":
 		err = CreateLoraConfigJson(basePath, model, version)
-		// case "LOCON":
-		// 	err = "models/LyCORIS"
+	case "LOCON":
+		err = CreateLycorisConfigJson(basePath, model, version)
 	}
 
 	if err != nil {
@@ -68,9 +76,61 @@ func CreateConfigJson(basePath string, model *civit.CivitAIModel, version *civit
 }
 
 func CreateLoraConfigJson(basePath string, model *civit.CivitAIModel, version *civit.CivitAIModelVersion) error {
-	var config LoraConfigJson
+	config := LoraConfigJson{
+		Description:     fmt.Sprintf("https://civitai.com/models/%d", model.Id),
+		PreferredWeight: 0.8,
+	}
 
-	// PAREI AQUI!
+	if len(version.TrainedWords) > 0 {
+		config.ActivationText = strings.Join(version.TrainedWords, ", ")
+	}
+
+	baseModelVersion, _ := strconv.ParseFloat(version.BaseModel, 32)
+	if baseModelVersion < 2 {
+		config.SDVersion = "SD1"
+	}
+
+	// fmt.Printf("%+v", config)
+
+	encodedConfig, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+
+	modelFilename, _ := version.GetFilename()
+	jsonFilePath := strings.TrimSuffix(modelFilename, filepath.Ext(modelFilename)) + ".json"
+	jsonFilePath = filepath.Join(basePath, jsonFilePath)
+
+	// Open the file for writing
+	err = ioutil.WriteFile(jsonFilePath, encodedConfig, 0644)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func CreateLycorisConfigJson(basePath string, model *civit.CivitAIModel, version *civit.CivitAIModelVersion) error {
+	config := LycorisConfigJson{
+		Description: fmt.Sprintf("https://civitai.com/models/%d", model.Id),
+	}
+
+	encodedConfig, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+
+	modelFilename, _ := version.GetFilename()
+	jsonFilePath := strings.TrimSuffix(modelFilename, filepath.Ext(modelFilename)) + ".json"
+	jsonFilePath = filepath.Join(basePath, jsonFilePath)
+
+	// Open the file for writing
+	err = ioutil.WriteFile(jsonFilePath, encodedConfig, 0644)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
 
 	return nil
 }

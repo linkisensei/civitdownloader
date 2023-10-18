@@ -5,8 +5,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bufio"
+	"fmt"
 	"os"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/linkisensei/civitdownloader/app"
 	"github.com/spf13/cobra"
 )
@@ -19,20 +23,37 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		// model, _ := civit.GetModel(25306)
-		// fmt.Printf("MODEL: %s\n", model.Name)
 
-		// fmt.Printf("LATEST VERSION: %s\n", model.GetVersion(0).Name)
-		// downloadUrl, _ := model.Versions[0].GetDownloadUrl()
-		// fmt.Printf("DOWNLOAD URL: %s\n", downloadUrl)
+		redColor := color.New(color.FgRed).Add(color.Bold)
+		greenColor := color.New(color.FgGreen).Add(color.Underline)
 
-		// fmt.Printf("63765 VERSION: %s\n", model.GetVersion(63765).Name)
-		// downloadUrl2, _ := model.GetVersion(63765).GetDownloadUrl()
-		// fmt.Printf("DOWNLOAD URL: %s\n", downloadUrl2)
+		fmt.Printf(" +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+\n |C|i|v|i|t| |D|o|w|n|l|o|a|d|e|r|\n +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+")
 
-		// civit.createRequestInfoFromUrl("https://civitai.com/models/25306?modelVersionId=40541")
+		for {
+			fmt.Printf("\n\nType \"exit\" to exit")
+			greenColor.Printf("\nInsert the model URL: ")
 
-		app.DownloadModel("https://civitai.com/models/25306?modelVersionId=40541")
+			reader := bufio.NewReader(os.Stdin)
+			input, err := reader.ReadString('\n')
+			if err != nil {
+				continue
+			}
+
+			// Cleaning Input
+			input = strings.ReplaceAll(input, "\r\n", "")
+			input = strings.ReplaceAll(input, "\n", "")
+
+			if input == "exit" {
+				break
+			}
+
+			if input != "" {
+				err := app.DownloadModel(input)
+				if err != nil {
+					redColor.Printf("Error: %s", err.Error()+"\n")
+				}
+			}
+		}
 	},
 }
 
