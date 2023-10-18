@@ -24,7 +24,7 @@ func DownloadModel(modelUrl string) error {
 	}
 
 	greenColor := color.New(color.FgGreen).Add(color.Underline)
-	greenColor.Printf("Model: %s", civitModel.Name+"\n")
+	greenColor.Printf("\n\nModel: %s", civitModel.Name+"\n")
 
 	// Extracting Model Version and Model File
 	modelVersion := civitModel.GetVersion(requestInfo.VersionId)

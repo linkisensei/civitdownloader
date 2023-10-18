@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/linkisensei/civitdownloader/app/config"
 	"github.com/linkisensei/civitdownloader/civit"
 	"github.com/linkisensei/civitdownloader/util"
+	"github.com/spf13/viper"
 )
 
 type LoraConfigJson struct {
@@ -47,7 +47,7 @@ func GetModelPathFromCivitAiModel(model *civit.CivitAIModel) (string, error) {
 		return relativePath, errors.New(fmt.Sprintf("unknow model type %s", model.Type))
 	}
 
-	instalationPath := config.Config.GetString(config.INSTALLATION_PATH)
+	instalationPath := viper.GetString("path")
 	filePath := filepath.Join(instalationPath, relativePath)
 
 	// Making sure that

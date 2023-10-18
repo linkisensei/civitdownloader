@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/linkisensei/civitdownloader/app/config"
+	"log"
+
 	"github.com/linkisensei/civitdownloader/cmd"
 )
 
 func main() {
-	config.Config.Init()
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	cmd.Execute()
 }

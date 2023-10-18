@@ -7,8 +7,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/linkisensei/civitdownloader/app/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // configCmd represents the config command
@@ -19,7 +19,8 @@ var configCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		installation_path, _ := cmd.Flags().GetString("path")
 		if installation_path != "" {
-			config.Config.Set(config.INSTALLATION_PATH, installation_path)
+			viper.Set("path", installation_path)
+			viper.SafeWriteConfig()
 			fmt.Printf("Automatic1111's installation path set to %s", installation_path)
 		}
 	},

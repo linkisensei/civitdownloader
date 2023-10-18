@@ -1,28 +1,26 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/linkisensei/civitdownloader/app"
-	"github.com/linkisensei/civitdownloader/app/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var installation_path string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "civitdownloader",
 	Short: "A simple tool for downloading Civit AI Models directly to Automatic1111",
 	Long:  `A simple tool for downloading Civit AI Models directly to Automatic1111`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+
 	Run: func(cmd *cobra.Command, args []string) {
 
 		redColor := color.New(color.FgRed).Add(color.Bold)
@@ -30,9 +28,12 @@ var rootCmd = &cobra.Command{
 
 		fmt.Printf(" +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+\n |C|i|v|i|t| |D|o|w|n|l|o|a|d|e|r|\n +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+\n")
 
-		fmt.Println(config.Config.Get(config.INSTALLATION_PATH))
+		fmt.Printf("\n   AUTOMATIC1111'S PATH: " + viper.GetString("path"))
+		fmt.Printf("\n   Type \"exit\" to exit\n\n")
 
-		if config.Config.Get(config.INSTALLATION_PATH) == "" {
+		installation_path := viper.GetString("path")
+
+		if installation_path == "" {
 			redColor := color.New(color.FgRed).Add(color.Bold)
 			redColor.Println("Automatic1111's installation path missing!")
 			fmt.Println("Please set the path by executing this program with the following arguments \"config --path PATH_TO_AUTOMATIC1111_INSTALLATION_FOLDER\"\n")
@@ -40,7 +41,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		for {
-			fmt.Printf("\n\nType \"exit\" to exit")
+
 			greenColor.Printf("\nInsert the model URL: ")
 
 			reader := bufio.NewReader(os.Stdin)
@@ -70,6 +71,13 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	rootCmd.PersistentFlags().String("path", "", "Automatic1111's installation path")
+	if err := viper.BindPFlag("path", rootCmd.PersistentFlags().Lookup("path")); err != nil {
+		log.Fatal("Unable to bind flag:", err)
+	}
+
+	cobra.OnInitialize(initConfig)
+
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -77,3 +85,14 @@ func Execute() {
 }
 
 func init() {}
+
+func initConfig() {
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err != nil {
+		log.Println(err.Error())
+	}
+}
