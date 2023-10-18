@@ -9,11 +9,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/linkisensei/civitdownloader/app/config"
 	"github.com/linkisensei/civitdownloader/civit"
 	"github.com/linkisensei/civitdownloader/util"
 )
-
-var instalationPath string = "F:\\stable-diffusion-webui"
 
 type LoraConfigJson struct {
 	SDVersion       string  `json="sd version"`
@@ -48,6 +47,7 @@ func GetModelPathFromCivitAiModel(model *civit.CivitAIModel) (string, error) {
 		return relativePath, errors.New(fmt.Sprintf("unknow model type %s", model.Type))
 	}
 
+	instalationPath := config.Config.GetString(config.INSTALLATION_PATH)
 	filePath := filepath.Join(instalationPath, relativePath)
 
 	// Making sure that

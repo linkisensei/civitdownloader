@@ -12,6 +12,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/linkisensei/civitdownloader/app"
+	"github.com/linkisensei/civitdownloader/app/config"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +28,16 @@ var rootCmd = &cobra.Command{
 		redColor := color.New(color.FgRed).Add(color.Bold)
 		greenColor := color.New(color.FgGreen).Add(color.Underline)
 
-		fmt.Printf(" +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+\n |C|i|v|i|t| |D|o|w|n|l|o|a|d|e|r|\n +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+")
+		fmt.Printf(" +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+\n |C|i|v|i|t| |D|o|w|n|l|o|a|d|e|r|\n +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+\n")
+
+		fmt.Println(config.Config.Get(config.INSTALLATION_PATH))
+
+		if config.Config.Get(config.INSTALLATION_PATH) == "" {
+			redColor := color.New(color.FgRed).Add(color.Bold)
+			redColor.Println("Automatic1111's installation path missing!")
+			fmt.Println("Please set the path by executing this program with the following arguments \"config --path PATH_TO_AUTOMATIC1111_INSTALLATION_FOLDER\"\n")
+			return
+		}
 
 		for {
 			fmt.Printf("\n\nType \"exit\" to exit")
@@ -66,11 +76,4 @@ func Execute() {
 	}
 }
 
-func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.civitdownloader.yaml)")
-
-}
+func init() {}
